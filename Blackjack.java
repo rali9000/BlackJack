@@ -4,120 +4,14 @@ import java.util.List;
 import java.util.Scanner;
 
 /**
- * Put a short phrase describing the program here.
+ * A program where you can play Blackjack.
  *
  * @author Ali Raouidah
  *
  */
 public final class Blackjack {
 
-    /**
-     * A card object that holds a suit and a value.
-     *
-     * @author Ali Raouidah
-     *
-     */
-    public static class Card {
-        /**
-         * The suit and value that will be assigned to this card.
-         */
-        private final int suit, value;
 
-        /**
-         * All names of suits.
-         */
-        private final String[] suits = { "Spades", "Clubs", "Hearts", "Diamonds"};
-
-        /**
-         * All possible card values.
-         */
-        private final String[] values = { null, "Ace", "2", "3", "4", "5", "6", "7",
-                "8", "9", "10", "Jack", "Queen", "King"};
-
-        /**
-         * Standard Constructor.
-         *
-         * @param suit
-         *          A number between 0 and 3 which assigns the suit of the card,
-         *          the suits are in this order:
-         *          spades, clubs, hearts, diamonds
-         * @param value
-         *          A number between 1 and 13 which assigns the value of the card,
-         *          the values are in this order:
-         *          Ace, 2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King
-         */
-        public Card(int suit, int value) {
-            assert (1 <= value && value < values.length)
-                : "Violation of: Card value must be between 1 and 13";
-            assert (0 <= suit && suit < suits.length)
-                : "Violation of: Card suit must be between 0 and 3";
-
-            this.suit = suit;
-            this.value = value;
-        }
-    }
-
-    /**
-     * The max number of suits, or suits.length in cards class.
-     */
-    public static final int MAX_SUITS = 4;
-
-    /**
-     * The max number of values, or values.length in cards class.
-     */
-    public static final int MAX_VALUES = 14;
-
-    /**
-     * An object that holds all the cards in one deck.
-     *
-     * @author Ali Raouidah
-     *
-     */
-    public static class Deck {
-
-        /**
-         * The total number of cards in a deck.
-         */
-        private static final int DECK_SIZE = 52;
-
-        /**
-         * All the cards in the deck.
-         */
-        private List<Card> cards;
-
-        /**
-         * Standard Constructor.
-         *
-         * @param deckCount
-         *          The number of decks to be used, default should be 1,
-         *          however, some games such as blackjack use 4
-         */
-        public Deck(int deckCount) {
-            cards = new ArrayList<Card>(DECK_SIZE);
-            for (int i = 0; i < deckCount; i++) {
-                for (int suit = 0; suit < MAX_SUITS; suit++) {
-                    for (int value = 1; value < MAX_VALUES; value++) {
-                        cards.add(new Card(suit, value));
-                    }
-                }
-            }
-        }
-
-        /**
-         * Deals a certain number of cards to the player.
-         *
-         * @param numCards
-         *          the number of cards to be dealt
-         * @return the cards drawn by the player.
-         */
-        public List<Card> deal(int numCards) {
-            List<Card> drawnCards = new ArrayList<Card>(numCards);
-            for (int i = 0; i < numCards; i++) {
-                drawnCards.add(cards.remove(0));
-            }
-            return drawnCards;
-        }
-    }
 
     /**
      * Private constructor so this utility class cannot be instantiated.
@@ -126,49 +20,48 @@ public final class Blackjack {
     }
 
     /**
-     *
-     * @param hand
-     * @return the total value of this hand's cards
-     */
-    private static int handValue(List<Card> hand) {
-        final int faceValue = 10;
-        final int aceValue = 11;
-        final int winValue = 21;
+    *
+    * @param hand
+    * @return the total value of this hand's cards
+    */
+   private static int handValue(List<CardsAndDecks.Card> hand) {
+       final int faceValue = 10;
+       final int aceValue = 11;
 
-        int handValue = 0;
-        for (Card c : hand) {
-            if (c.value == 1) {
-                if (handValue > winValue - aceValue) {
-                    handValue += 1;
-                } else {
-                    handValue += aceValue;
-                }
-            } else if (c.value < aceValue) {
-                handValue += Integer.parseInt(c.values[c.value]);
-            } else {
-                handValue += faceValue;
-            }
-        }
-        return handValue;
-    }
+       int handValue = 0;
+       for (CardsAndDecks.Card c : hand) {
+           if (c.returnValue() == 1) {
+               if (handValue > WIN_VALUE - aceValue) {
+                   handValue += 1;
+               } else {
+                   handValue += aceValue;
+               }
+           } else if (c.returnValue() < aceValue) {
+               handValue += Integer.parseInt(c.returnValues(c.returnValue()));
+           } else {
+               handValue += faceValue;
+           }
+       }
+       return handValue;
+   }
 
     /**
     *
     * @param c
     *      the card that was recently drawn.
     */
-   private static void printCardDraw(Card c) {
+   private static void printCardDraw(CardsAndDecks.Card c) {
        final int eight = 8;
        final int ace = 1;
 
-       if (c.value == ace || c.value == eight) {
+       if (c.returnValue() == ace || c.returnValue() == eight) {
            System.out.print(" an "
-                   + c.values[c.value] + " of "
-                   + c.suits[c.suit] + ".\n");
+                   + c.returnValues(c.returnValue()) + " of "
+                   + c.returnSuits(c.returnSuit()) + ".\n");
        } else {
            System.out.print(" a "
-                   + c.values[c.value] + " of "
-                   + c.suits[c.suit] + ".\n");
+                   + c.returnValues(c.returnValue()) + " of "
+                   + c.returnSuits(c.returnSuit()) + ".\n");
        }
    }
 
@@ -204,6 +97,113 @@ public final class Blackjack {
        return bet;
    }
 
+   /**
+    * Number of decks to be shuffled into the game.
+    */
+   static final int DECK_COUNT = 1;
+
+   /**
+    * Value required to win, going over means busting.
+    */
+   static final int WIN_VALUE = 21;
+
+   /**
+    * Deck value the dealer must stand on.
+    */
+   static final int DEALER_STAND = 17;
+
+   /**
+    * Chips the player starts the game with.
+    */
+   static final int STARTING_CHIPS = 10000;
+
+   /**
+    * Multiplier for winnings when the player gets blackjack.
+    */
+   static final double BLACKJACK_MULTIPLIER = 1.5;
+
+   /**
+    * Calculates whether the dealer or player won, and outputs a corresponding message.
+    *
+    * @param dealerValue
+    *      value of the dealer's hand
+    * @param playerValue
+    *      value of the player's hand
+    * @param chips
+    *      how many chips the player has remaining
+    * @param bet
+    *      how much the player bet
+    * @return the player's remaining chips
+    */
+   private static int winOrLose(int dealerValue, int playerValue, int chips, int bet) {
+       switch (Integer.compare(dealerValue, playerValue)) {
+           case 1:
+               System.out.println("\nThe dealer wins.");
+               System.out.println("\nYou've lost " + bet + " chips."
+                       + "\nYour current balance is "
+                       + (chips - bet) + " chips.\n");
+               return chips - bet;
+           case 0:
+               System.out.println("\nNobody won. "
+                       + "\nYour current balance is "
+                       + chips + " chips.\n");
+               return chips;
+           case -1:
+               System.out.println("\nThe player wins.");
+               System.out.println("\nYou've won " + bet + " chips!"
+                       + "\nYour current balance is "
+                       + (chips + bet) + " chips.\n");
+               return chips + bet;
+           default:
+               return -1;
+       }
+   }
+
+   /**
+    * Asks the player if they'd like to play again after a hand.
+    *
+    * @param in
+    *      the input stream
+    * @return whether the player would like to play again or not.
+    */
+   private static boolean playAgain(Scanner in) {
+       System.out.println("\nWould you like to play again? Yes (y) or No (n).");
+       String response = in.nextLine();
+       response = response.toLowerCase();
+       boolean validResponse = false;
+       boolean playing = true;
+       while (!validResponse) {
+           if (response.equals("n") || response.equals("no")) {
+               playing = false;
+               validResponse = true;
+           } else if (response.equals("y") || response.equals("yes")) {
+               validResponse = true;
+           } else {
+               System.out.println("\nPlease input a valid response.");
+           }
+       }
+       return playing;
+   }
+
+   /**
+    * When a player decides they are no longer playing, a message is sent to the console
+    * letting them know how many chips they gained or lost.
+    *
+    * @param chips
+    *      the number of chips the player has remaining.
+    */
+   private static void exitMessage(int chips) {
+       System.out.println("You leave with " + chips + " chips, "
+               + "and started with " + STARTING_CHIPS + ".");
+       if (chips > STARTING_CHIPS) {
+           System.out.println("You made " + (chips - STARTING_CHIPS) + " chips!");
+       } else if (chips < STARTING_CHIPS) {
+           System.out.println("You lost " + (chips - STARTING_CHIPS) + " chips.");
+       } else {
+           System.out.println("You broke even.");
+       }
+   }
+
     /**
      * Main method.
      *
@@ -212,37 +212,30 @@ public final class Blackjack {
      */
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
-
-        final int deckCount = 4;
-        final int winValue = 21;
-        final int dealerStand = 17;
-        final int startingChips = 10000;
-        final double blackjackMultiplier = 1.5;
-
-        Deck deck = new Deck(deckCount);
-        Collections.shuffle(deck.cards);
-
-        int chips = startingChips;
+        int chips = STARTING_CHIPS;
         System.out.println("You begin with " + chips + " chips.");
+        CardsAndDecks.Deck deck = new CardsAndDecks.Deck(DECK_COUNT);
+        Collections.shuffle(deck.returnCards());
 
+        int turn = 0;
         boolean playing = true;
         boolean bankrupt = false;
         while (playing && !bankrupt) {
             int bet = betting(chips, in);
 
-            List<Card> dealersHand = new ArrayList<Card>();
-            List<Card> dealersDraw = deck.deal(2);
-            Card dealerCard = dealersDraw.get(0);
+            List<CardsAndDecks.Card> dealersHand = new ArrayList<CardsAndDecks.Card>();
+            List<CardsAndDecks.Card> dealersDraw = deck.deal(2);
+            CardsAndDecks.Card dealerCard = dealersDraw.get(0);
             System.out.print("\nThe dealer reveals their first card."
                     + "\nIt's");
             printCardDraw(dealerCard);
             System.out.println();
             dealersHand.addAll(dealersDraw);
 
-            List<Card> playersHand = new ArrayList<Card>();
-            List<Card> playersDraw = deck.deal(2);
+            List<CardsAndDecks.Card> playersHand = new ArrayList<CardsAndDecks.Card>();
+            List<CardsAndDecks.Card> playersDraw = deck.deal(2);
 
-            for (Card c : playersDraw) {
+            for (CardsAndDecks.Card c : playersDraw) {
                 System.out.print("You drew");
                 printCardDraw(c);
             }
@@ -253,30 +246,64 @@ public final class Blackjack {
             System.out.println("The total value of your hand is " + playerValue + ".");
 
             boolean blackjack = false;
-            if (playerValue == winValue) {
+            if (playerValue == WIN_VALUE) {
                 System.out.println("\nBlackjack! The player wins!");
-                chips += (bet * blackjackMultiplier);
+                chips += (bet * BLACKJACK_MULTIPLIER);
                 blackjack = true;
+                System.out.println("\nYour current balance is " + chips + " chips!");
             }
 
             if (!blackjack) {
                 boolean stand = false;
-                while (!stand && playerValue < winValue) {
+                while (!stand && playerValue < WIN_VALUE) {
                     System.out.println("\nWould you like to hit (h) or stand (s)?");
+                    if (turn == 0) {
+                        System.out.println("You may also double down (d).");
+                    }
                     String response = in.nextLine();
                     response = response.toLowerCase();
-                    if (response.equals("h") || response.equals("hit")) {
-                        playersDraw = deck.deal(1);
-                        Card drawnCard = playersDraw.remove(0);
-                        System.out.print("You drew");
-                        printCardDraw(drawnCard);
-                        playersHand.add(drawnCard);
-                        playerValue = handValue(playersHand);
-                        System.out.println("The total value of your hand is "
-                                + playerValue + ".");
-                    } else {
-                        stand = true;
-                        Card dealerCard2 = dealersHand.get(1);
+
+                    switch (response) {
+                        case "h":
+                        case "hit":
+                            turn++;
+                            playersDraw = deck.deal(1);
+                            CardsAndDecks.Card drawnCard = playersDraw.remove(0);
+                            System.out.print("You drew");
+                            printCardDraw(drawnCard);
+                            playersHand.add(drawnCard);
+                            playerValue = handValue(playersHand);
+                            System.out.println("The total value of your hand is "
+                                    + playerValue + ".");
+                            break;
+                        case "s":
+                        case "stand":
+                            stand = true;
+                            break;
+                        case "d":
+                        case "double":
+                        case "double down":
+                            if (turn == 0) {
+                                System.out.println("Your bet has increased to "
+                                        + bet + " chips.");
+                                playersDraw = deck.deal(1);
+                                CardsAndDecks.Card dDrawnCard = playersDraw.remove(0);
+                                System.out.print("You drew");
+                                printCardDraw(dDrawnCard);
+                                playersHand.add(dDrawnCard);
+                                playerValue = handValue(playersHand);
+                                bet *= 2;
+                                stand = true;
+                                System.out.println("The total value of your hand is "
+                                        + playerValue + ".");
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (stand) {
+                        CardsAndDecks.Card dealerCard2 = dealersHand.get(1);
                         System.out.print("\nThe dealer reveals their second card."
                                 + "\nIt's");
                         printCardDraw(dealerCard2);
@@ -286,10 +313,10 @@ public final class Blackjack {
                     }
                 }
 
-                if (playerValue <= winValue) {
+                if (playerValue <= WIN_VALUE) {
                     int dealerValue = handValue(dealersHand);
 
-                    while (dealerValue < dealerStand) {
+                    while (dealerValue < DEALER_STAND) {
                         dealersDraw = deck.deal(1);
                         dealerCard = dealersDraw.remove(0);
                         System.out.print("\nThe dealer drew");
@@ -300,36 +327,14 @@ public final class Blackjack {
                                 + dealerValue + ".");
                     }
 
-                    if (dealerValue > winValue) {
+                    if (dealerValue > WIN_VALUE) {
                         System.out.println("\nThe dealer busts, and the player wins!");
                         chips += bet;
                         System.out.println("\nYou've won " + bet + " chips!"
                                 + "\nYour current balance is "
                                 + chips + " chips!");
                     } else {
-                        switch (Integer.compare(dealerValue, playerValue)) {
-                            case 1:
-                                System.out.println("\nThe dealer wins.");
-                                chips -= bet;
-                                System.out.println("\nYou've lost " + bet + " chips."
-                                        + "\nYour current balance is "
-                                        + chips + " chips.");
-                                break;
-                            case 0:
-                                System.out.print("\nNobody won. "
-                                        + "\nYour current balance is "
-                                        + chips + " chips.");
-                                break;
-                            case -1:
-                                System.out.println("\nThe player wins.");
-                                chips += bet;
-                                System.out.println("\nYou've won " + bet + " chips!"
-                                        + "\nYour current balance is "
-                                        + chips + " chips!");
-                                break;
-                            default:
-                                break;
-                        }
+                        chips = winOrLose(dealerValue, playerValue, chips, bet);
                     }
                 } else {
                     System.out.println("\nThe player busts, and the dealer wins.");
@@ -339,20 +344,16 @@ public final class Blackjack {
                             + chips + " chips.");
                 }
             }
+
             if (chips > 0) {
-                System.out.println("\nWould you like to play again? Yes (y) or No (n).");
-                String response = in.nextLine();
-                response = response.toLowerCase();
-                if (response.equals("n") || response.equals("no")) {
-                    playing = false;
-                }
+                playing = playAgain(in);
             } else {
-                System.out.println("\nYou've lost all your chips.");
+                System.out.println("You've lost all your chips.");
                 playing = false;
             }
         }
-        System.out.println("\nYou leave with " + chips + " chips, "
-                + "and started with " + startingChips + ".");
+        exitMessage(chips);
+
         /*
          * Close input and output streams
          */
